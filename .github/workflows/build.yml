@@ -1,0 +1,85 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    name: Build & Smoke Test
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: webcalc:test
+
+      - name: Smoke test — start container and verify response
+        run: |
+          docker run -d --name webcalc-test -p 8080:80 webcalc:test
+          sleep 2
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/)
+          if [ "$RESPONSE" != "200" ]; then
+            echo "❌ Expected HTTP 200, got $RESPONSE"
+            docker logs webcalc-test
+            docker rm -f webcalc-test
+            exit 1
+          fi
+          CONTENT=$(curl -s http://localhost:8080/)
+          if echo "$CONTENT" | grep -qi "calculator\|WebCalc"; then
+            echo "✅ Calculator content detected"
+          else
+            echo "⚠️  Response is 200 but calculator content not detected"
+          fi
+          echo "✅ Smoke test passed!"
+          docker rm -f webcalc-test
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        if: github.event_name != 'pull_request'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,format=short
+            type=semver,pattern={{version}}
+
+      - name: Build and push to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
