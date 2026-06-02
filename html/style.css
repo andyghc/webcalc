@@ -19,13 +19,92 @@ body {
     padding: 24px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     width: 320px;
+    transition: width 0.3s ease;
 }
 
+.calculator.scientific {
+    width: 520px;
+}
+
+/* Mode Toggle */
+.mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.mode-label {
+    font-size: 0.85rem;
+    color: #5a6a8a;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    user-select: none;
+}
+
+.mode-label.active {
+    color: #53a8b6;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #0f3460;
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #53a8b6;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.switch input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* Mode Indicator */
+.mode-indicator {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #4a5a7a;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+}
+
+/* Display */
 .display {
     background: #0f3460;
     border-radius: 12px;
     padding: 20px 24px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     text-align: right;
     font-size: 2.5rem;
     font-weight: 300;
@@ -40,6 +119,85 @@ body {
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Scientific Buttons */
+.sci-buttons {
+    margin-bottom: 12px;
+}
+
+.sci-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.sci-row:last-child {
+    margin-bottom: 0;
+}
+
+.sci-btn {
+    flex: 1;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sci-btn:active {
+    transform: scale(0.95);
+}
+
+.sci-btn.fn {
+    background: #1a1a40;
+    color: #7eb8c4;
+    box-shadow: 0 2px 0 #0d0d1f;
+}
+
+.sci-btn.fn:hover {
+    background: #24245a;
+}
+
+.sci-btn.const {
+    background: #1a3040;
+    color: #e0c080;
+    box-shadow: 0 2px 0 #0d1f2a;
+}
+
+.sci-btn.const:hover {
+    background: #24445a;
+}
+
+.angle-toggle,
+.inverse-toggle {
+    background: #2a1a30;
+    color: #b87ec4;
+    box-shadow: 0 2px 0 #1a0f1f;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.angle-toggle:hover,
+.inverse-toggle:hover {
+    background: #3a2445;
+}
+
+.angle-toggle.active {
+    background: #c4b87e;
+    color: #1a1a2e;
+    box-shadow: 0 2px 0 #8a7a4a;
+}
+
+.inverse-toggle.active {
+    background: #c47eb8;
+    color: #1a1a2e;
+    box-shadow: 0 2px 0 #8a4a7a;
+}
+
+/* Basic Buttons */
 .buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -109,4 +267,20 @@ body {
 
 .operator[data-action="backspace"] {
     font-size: 1.2rem;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 560px) {
+    .calculator.scientific {
+        width: 95vw;
+    }
+    .sci-btn {
+        font-size: 0.8rem;
+        padding: 10px 4px;
+    }
+}
+
+/* Error state for display */
+.display.error {
+    color: #e74c3c;
 }
